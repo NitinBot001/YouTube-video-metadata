@@ -1,3 +1,4 @@
 flask
-pytube
-youtube-search-python
+requests
+bs4
+lxml
