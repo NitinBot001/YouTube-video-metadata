@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from pytube import YouTube
 from youtubesearchpython import VideosSearch
+import pytube.exceptions
 
 app = Flask(__name__)
 
@@ -23,22 +24,27 @@ def get_song_video_metadata():
     video_id = search_results[0]['id']
     video_url = f"https://www.youtube.com/watch?v={video_id}"
     
-    # Fetch metadata using pytube
-    yt = YouTube(video_url)
-    
-    metadata = {
-        "videoID": video_id,
-        "title": yt.title,
-        "views": yt.views,
-        "length": yt.length,  # length in seconds
-        "author": yt.author,
-        "publish_date": yt.publish_date.strftime('%Y-%m-%d'),
-        "description": yt.description,
-        "keywords": yt.keywords,
-        "thumbnail_url": yt.thumbnail_url,
-    }
+    try:
+        # Fetch metadata using pytube
+        yt = YouTube(video_url)
+        
+        metadata = {
+            "videoID": video_id,
+            "title": yt.title,
+            "views": yt.views,
+            "length": yt.length,  # length in seconds
+            "author": yt.author,
+            "publish_date": yt.publish_date.strftime('%Y-%m-%d'),
+            "description": yt.description,
+            "keywords": yt.keywords,
+            "thumbnail_url": yt.thumbnail_url,
+        }
+    except pytube.exceptions.PytubeError as e:
+        # Handle the pytube error gracefully
+        return jsonify({"error": f"Failed to fetch metadata: {str(e)}"}), 500
 
     return jsonify(metadata)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=8000,debug=True)
+    # Specify the host and port here
+    app.run(host='0.0.0.0', port=8000, debug=True)
